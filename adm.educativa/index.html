@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Educativo: Colombia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           PALETA DE COLORES VIBRANTES
+           ========================================= */
+        :root {
+            --fondo-gradiente: linear-gradient(135deg, #FF6B6B 0%, #556270 100%);
+            --color-tarjeta: #ffffff;
+            --color-texto: #2d3436;
+            --color-titulo: #0984e3;
+            --btn-primario: #00b894;
+            --btn-primario-sombra: #00b89499;
+            --btn-secundario: #6c5ce7;
+            --btn-secundario-sombra: #6c5ce799;
+            --color-correcto: #00b894;
+            --color-incorrecto: #d63031;
+            --opcion-fondo: #f1f2f6;
+            --opcion-hover: #dfe4ea;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--fondo-gradiente);
+            background-attachment: fixed;
+            color: var(--color-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* =========================================
+           CONTENEDOR DEL JUEGO (ESTILO TARJETA 3D)
+           ========================================= */
+        .contenedor-juego {
+            background-color: var(--color-tarjeta);
+            width: 100%;
+            max-width: 750px;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+            border-top: 10px solid #fdcb6e;
+            animation: entrada 0.5s ease-out;
+        }
+
+        @keyframes entrada {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .oculto {
+            display: none !important;
+        }
+
+        /* =========================================
+           TEXTOS Y ENCABEZADOS
+           ========================================= */
+        h1 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--color-titulo);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #636e72;
+        }
+
+        /* =========================================
+           BOTONES DE ACCIÓN (INICIAR / SIGUIENTE)
+           ========================================= */
+        .btn-accion {
+            background-color: var(--btn-secundario);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #4a409e, 0 15px 20px var(--btn-secundario-sombra);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-accion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #4a409e, 0 20px 25px var(--btn-secundario-sombra);
+        }
+
+        .btn-accion:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #4a409e, 0 5px 10px var(--btn-secundario-sombra);
+        }
+
+        /* =========================================
+           ESTILOS DE LA TRIVIA
+           ========================================= */
+        .marcador {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffeaa7;
+            padding: 10px 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            color: #d35400;
+            font-size: 1.1rem;
+        }
+
+        .pregunta-texto {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .btn-opcion {
+            background-color: var(--opcion-fondo);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 18px;
+            font-size: 1.15rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            color: var(--color-texto);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-opcion:hover:not(:disabled) {
+            background-color: var(--opcion-hover);
+            transform: scale(1.02);
+            border-color: var(--btn-secundario);
+        }
+
+        /* ESTADOS DE RESPUESTA */
+        .btn-opcion.correcta {
+            background-color: var(--color-correcto);
+            color: white;
+            border-color: #00997a;
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-opcion.incorrecta {
+            background-color: var(--color-incorrecto);
+            color: white;
+            border-color: #b02727;
+            box-shadow: 0 5px 15px rgba(214, 48, 49, 0.4);
+        }
+
+        /* =========================================
+           RETROALIMENTACIÓN Y PUNTUACIÓN FINAL
+           ========================================= */
+        .retroalimentacion {
+            background-color: #fab1a0;
+            color: #d63031;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: left;
+            border-left: 8px solid #e17055;
+            animation: entrada 0.4s ease-out;
+        }
+
+        .puntaje-final {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 5rem;
+            color: var(--btn-primario);
+            margin: 20px 0;
+            text-shadow: 3px 3px 0 #b2bec3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-juego">
+        
+        <!-- PANTALLA 1: INICIO -->
+        <div id="pantalla-inicio">
+            <h1>🚀 Evolución Educativa</h1>
+            <p><strong>Demuestra lo que sabes:</strong> Historia de la educación en Colombia (Siglos XIX-XX), Ley 115, Modelos y Dimensiones de la Gestión Educativa.</p>
+            <button id="btn-empezar" class="btn-accion">¡Empezar Juego!</button>
+        </div>
+
+        <!-- PANTALLA 2: PREGUNTAS -->
+        <div id="pantalla-preguntas" class="oculto">
+            <div class="marcador">
+                <span>📚 Pregunta <span id="numero-actual">1</span> / <span id="total-preguntas">10</span></span>
+                <span>⭐ Puntos: <span id="puntaje-actual">0</span></span>
+            </div>
+            
+            <div id="pregunta-texto" class="pregunta-texto">Cargando...</div>
+            
+            <div id="opciones" class="opciones">
+                <!-- Se llenan con JS -->
+            </div>
+
+            <!-- Aquí sale la retroalimentación si se equivocan -->
+            <div id="retroalimentacion" class="retroalimentacion oculto"></div>
+
+            <button id="btn-siguiente" class="btn-accion oculto" style="background-color: var(--btn-primario); box-shadow: 0 8px 0 #00997a;">Siguiente ➔</button>
+        </div>
+
+        <!-- PANTALLA 3: RESULTADOS FINALES -->
+        <div id="pantalla-final" class="oculto">
+            <h1>🏁 ¡Juego Terminado!</h1>
+            <p>Has completado el cuestionario. Este es tu puntaje total:</p>
+            <div id="puntaje-final" class="puntaje-final">0</div>
+            <p id="mensaje-final" style="font-weight: bold; font-size: 1.4rem;"></p>
+            <button id="btn-reiniciar" class="btn-accion">Jugar de Nuevo 🔄</button>
+        </div>
+
+    </div>
+
+    <script>
+        /* =========================================
+           BASE DE PREGUNTAS FIEL A TUS APUNTES
+           ========================================= */
+        const basePreguntas = [
+            {
+                pregunta: "En el Modelo Burocrático, ¿cuál es una de las desventajas que se puede generar?",
+                opciones: [
+                    "Exceso de centralización, todo cae en el rector y lentitud en la toma de decisiones.",
+                    "Falta de procedimientos y continuidad institucional.",
+                    "La comunidad toma todas las decisiones generando un desorden."
+                ],
+                respuestaCorrecta: 0,
+                explicacion: "Genera exceso de centralización, todo cae en el rector. Si él falla todos lo hacen, y hay gran rigidez y lentitud en las decisiones."
+            },
+            {
+                pregunta: "En la etapa del Modelo Gerencial, adquiere importancia una visión orientada hacia:",
+                opciones: [
+                    "El uso exclusivo de las TIC en el aula.",
+                    "Los resultados, la eficacia, planeación, evolución, indicadores y cumplimiento de metas.",
+                    "La tradición religiosa y el bachillerato técnico."
+                ],
+                respuestaCorrecta: 1,
+                explicacion: "Con la influencia de organizaciones empresariales, se orienta a resultados, eficacia, uso estratégico de recursos y CUMPLIMIENTO DE METAS."
+            },
+            {
+                pregunta: "En la Gestión Estratégica, ¿cuáles son las tres preguntas base para el diagnóstico?",
+                opciones: [
+                    "¿Quiénes somos?, ¿De dónde venimos?, ¿Hacia dónde vamos?",
+                    "¿Cuánto presupuesto hay?, ¿Quién lo maneja?, ¿En qué se gasta?",
+                    "¿Cómo estamos?, ¿Qué tenemos?, ¿Qué necesitamos?"
+                ],
+                respuestaCorrecta: 2,
+                explicacion: "Los elementos centrales del diagnóstico estratégico buscan responder: Como estamos, que tenemos, que necesitamos."
+            },
+            {
+                pregunta: "En la etapa de Gestión Participativa, ¿quiénes participan en la construcción colectiva?",
+                opciones: [
+                    "Solo el rector, los coordinadores y el ministerio.",
+                    "Directivos, docentes, estudiantes, familias, personal administrativo y la comunidad.",
+                    "Exclusivamente los docentes y los estudiantes de grados superiores."
+                ],
+                respuestaCorrecta: 1,
+                explicacion: "La institución se concibe como un espacio de interacción donde participan directivos, docentes, estudiantes, familias, administrativos y comunidad."
+            },
+            {
+                pregunta: "En la Gestión centrada en el aprendizaje, ¿qué implica organizar la institución para una formación óptima?",
+                opciones: [
+                    "Considerar prácticas pedagógicas, currículo, evaluación, convivencia, inclusión y desarrollo docente.",
+                    "Delegar todas las decisiones a las familias para evitar conflictos.",
+                    "Separar a los estudiantes entre bachillerato técnico y académico."
+                ],
+                respuestaCorrecta: 0,
+                explicacion: "Implica considerar prácticas pedagógicas, currículo, evaluación, convivencia, inclusión, desarrollo profesional docente y condiciones institucionales."
+            },
+            {
+                pregunta: "Según la historia (Siglo XX), ¿qué caracterizó a la educación tras la Guerra de los Mil Días?",
+                opciones: [
+                    "Se unificó en un solo tipo de bachillerato universal y gratuito.",
+                    "La iglesia católica moldea la educación y hay separación entre el bachiller técnico y el universitario.",
+                    "Se elimina el analfabetismo por completo en Colombia."
+                ],
+                respuestaCorrecta: 1,
+                explicacion: "En el siglo XX la iglesia católica moldea la educación, y hubo una separación entre el bachiller técnico y el bachiller para los que se cree que van a la Universidad."
+            },
+            {
+                pregunta: "Según el texto, ¿con qué evento inicia la conformación del sistema educativo como Colombia?",
+                opciones: [
+                    "Con la conquista española.",
+                    "Con la ley 115 de 1994.",
+                    "Con la ley de Santander."
+                ],
+                respuestaCorrecta: 2,
+                explicacion: "La conformación del sistema educativo que inicia como Colombia (no desde la conquista) empieza con la ley de Santander."
+            },
+            {
+                pregunta: "¿Cuál es la relación principal entre la sociedad y la educación?",
+                opciones: [
+                    "La educación avanza por su cuenta, sin importar las necesidades.",
+                    "Ambas van de la mano: la sociedad cambia la educación y la educación a la sociedad.",
+                    "La sociedad solo influye en la educación de forma económica."
+                ],
+                respuestaCorrecta: 1,
+                explicacion: "La educación transforma y ayuda a configurar la sociedad; ambas van de la mano, se cambian mutuamente."
+            },
+            {
+                pregunta: "A lo largo de la historia colombiana, ¿cuáles han sido problemas persistentes en la educación?",
+                opciones: [
+                    "El analfabetismo y la baja cobertura.",
+                    "La falta de modelos burocráticos.",
+                    "El exceso de estudiantes universitarios."
+                ],
+                respuestaCorrecta: 0,
+                explicacion: "El texto menciona que 'El analfabetismo y la baja cobertura han sido problemas persistentes en la educación Colombiana'."
+            },
+            {
+                pregunta: "De acuerdo con el marco legal, ¿cuáles son los modelos o dimensiones de la gestión educativa?",
+                opciones: [
+                    "Gestión pública, privada y mixta.",
+                    "Gestión administrativa, académica, directiva y comunitaria.",
+                    "Gestión municipal, departamental y nacional."
+                ],
+                respuestaCorrecta: 1,
+                explicacion: "Las dimensiones finales son: gestión administrativa, académica, directiva y comunitaria."
+            }
+        ];
+
+        /* =========================================
+           LÓGICA E INTERACCIÓN DEL JUEGO
+           ========================================= */
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // Variables de control
+            let indiceActual = 0;
+            let puntaje = 0;
+
+            // Referencias del DOM
+            const pnlInicio = document.getElementById('pantalla-inicio');
+            const pnlPreguntas = document.getElementById('pantalla-preguntas');
+            const pnlFinal = document.getElementById('pantalla-final');
+            
+            const btnEmpezar = document.getElementById('btn-empezar');
+            const btnSiguiente = document.getElementById('btn-siguiente');
+            const btnReiniciar = document.getElementById('btn-reiniciar');
+            
+            const txtPregunta = document.getElementById('pregunta-texto');
+            const contOpciones = document.getElementById('opciones');
+            const cajaRetroalimentacion = document.getElementById('retroalimentacion');
+            
+            const spanNumActual = document.getElementById('numero-actual');
+            const spanTotalPreg = document.getElementById('total-preguntas');
+            const spanPuntajeActual = document.getElementById('puntaje-actual');
+            
+            const txtPuntajeFinal = document.getElementById('puntaje-final');
+            const txtMensajeFinal = document.getElementById('mensaje-final');
+
+            // Inicializar totales
+            spanTotalPreg.innerText = basePreguntas.length;
+
+            // Asignar Eventos a los botones principales
+            btnEmpezar.addEventListener("click", iniciarJuego);
+            btnSiguiente.addEventListener("click", cargarSiguiente);
+            btnReiniciar.addEventListener("click", iniciarJuego);
+
+            function iniciarJuego() {
+                indiceActual = 0;
+                puntaje = 0;
+                spanPuntajeActual.innerText = puntaje;
+                
+                pnlInicio.classList.add('oculto');
+                pnlFinal.classList.add('oculto');
+                pnlPreguntas.classList.remove('oculto');
+                
+                mostrarPregunta();
+            }
+
+            function mostrarPregunta() {
+                // Limpiar pantalla anterior
+                cajaRetroalimentacion.classList.add('oculto');
+                btnSiguiente.classList.add('oculto');
+                contOpciones.innerHTML = '';
+                spanNumActual.innerText = indiceActual + 1;
+
+                const datosActuales = basePreguntas[indiceActual];
+                txtPregunta.innerText = datosActuales.pregunta;
+
+                // Crear botones de las opciones
+                datosActuales.opciones.forEach((opcionTexto, index) => {
+                    const boton = document.createElement('button');
+                    boton.innerText = opcionTexto;
+                    boton.className = 'btn-opcion';
+                    boton.addEventListener("click", function() {
+                        evaluarRespuesta(index, this);
+                    });
+                    contOpciones.appendChild(boton);
+                });
+            }
+
+            function evaluarRespuesta(indiceElegido, botonElegido) {
+                const datosActuales = basePreguntas[indiceActual];
+                const todosLosBotones = contOpciones.querySelectorAll('.btn-opcion');
+                
+                // Bloquear todos los botones tras responder
+                todosLosBotones.forEach(btn => btn.disabled = true);
+
+                if (indiceElegido === datosActuales.respuestaCorrecta) {
+                    botonElegido.classList.add('correcta');
+                    puntaje++;
+                    spanPuntajeActual.innerText = puntaje;
+                } else {
+                    botonElegido.classList.add('incorrecta');
+                    // Mostrar cuál era la correcta
+                    todosLosBotones[datosActuales.respuestaCorrecta].classList.add('correcta');
+                    
+                    // Mostrar explicación
+                    cajaRetroalimentacion.innerHTML = `<strong>¡Atención!</strong> ${datosActuales.explicacion}`;
+                    cajaRetroalimentacion.classList.remove('oculto');
+                }
+
+                btnSiguiente.classList.remove('oculto');
+            }
+
+            function cargarSiguiente() {
+                indiceActual++;
+                if (indiceActual < basePreguntas.length) {
+                    mostrarPregunta();
+                } else {
+                    terminarJuego();
+                }
+            }
+
+            function terminarJuego() {
+                pnlPreguntas.classList.add('oculto');
+                pnlFinal.classList.remove('oculto');
+                
+                txtPuntajeFinal.innerText = `${puntaje} / ${basePreguntas.length}`;
+
+                if (puntaje === basePreguntas.length) {
+                    txtMensajeFinal.innerText = "¡Puntaje Perfecto! 🌟 Estás más que listo para tu parcial.";
+                    txtMensajeFinal.style.color = "#00b894";
+                } else if (puntaje >= 6) {
+                    txtMensajeFinal.innerText = "¡Buen trabajo! 👍 Repasa un poquito los detalles y serás un experto.";
+                    txtMensajeFinal.style.color = "#0984e3";
+                } else {
+                    txtMensajeFinal.innerText = "¡No te rindas! 📚 Vuelve a revisar los apuntes e inténtalo de nuevo.";
+                    txtMensajeFinal.style.color = "#d63031";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
